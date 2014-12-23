@@ -42,7 +42,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
 	HINSTANCE hMod = LoadLibrary("rich_edit_hook.dll");
 	FARPROC proc = GetProcAddress(hMod, "_hook@12");
-	// HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
+	// WH_CBT is the least intrusive hook type
+	HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
@@ -62,5 +63,5 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	// return UnhookWindowsHookEx(hHook);
+	return UnhookWindowsHookEx(hHook);
 }
