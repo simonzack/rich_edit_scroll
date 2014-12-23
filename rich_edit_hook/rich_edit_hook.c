@@ -4,24 +4,63 @@
 
 #pragma comment(lib, "libMinHook.lib")
 
+typedef HMODULE(WINAPI *LOADLIBRARYEXW)(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
+
 BOOL matched = FALSE;
+FARPROC aRichEditWndProc;
 WNDPROC fpRichEditWndProc = NULL;
+FARPROC aLoadLibraryExW;
+LOADLIBRARYEXW fpLoadLibraryExW = NULL;
+
+LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+	if (delta > 0) {
+		return fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEUP, 0);
+	} else {
+		return fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+	}
+}
 
 LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	// XXX
+	switch (message) {
+		case WM_MOUSEWHEEL:
+			return Scroll(hWnd, message, wParam, lParam);
+		case WM_VSCROLL:
+			switch (LOWORD(wParam)) {
+				case SB_THUMBTRACK:
+					return Scroll(hWnd, message, wParam, lParam);
+			}
+			break;
+	}
 	return fpRichEditWndProc(hWnd, message, wParam, lParam);
 }
 
 void HookRichEditWndProc(HINSTANCE hinstRichEdit){
-	FARPROC RichEditWndProc = GetProcAddress(hinstRichEdit, "RichEditWndProc");
-	if (MH_CreateHook(&RichEditWndProc, &RichEditWndProcHook, (LPVOID*)&fpRichEditWndProc) != MH_OK)
+	aRichEditWndProc = GetProcAddress(hinstRichEdit, "RichEditWndProc");
+	if (MH_CreateHook(&aRichEditWndProc, &RichEditWndProcHook, (LPVOID*)&fpRichEditWndProc) != MH_OK)
 		return;
-	if (MH_EnableHook(&RichEditWndProc) != MH_OK)
+	if (MH_EnableHook(&aRichEditWndProc) != MH_OK)
 		return;
 }
 
+HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
+	HMODULE res = fpLoadLibraryExW(lpFileName, hFile, dwFlags);
+	if (res == NULL)
+		return res;
+	if (wcscmp(lpFileName, L"msftedit") == 0 || wcscmp(lpFileName, L"msftedit.dll") == 0)
+		HookRichEditWndProc(res);
+	MH_DisableHook(&LoadLibraryExW);
+	return res;
+}
+
 void HookLoadLibrary(){
-	// XXX
+	// all the LoadLibrary variants eventually call LoadLibraryExW
+	HINSTANCE hinstKernelBase = GetModuleHandle("kernelbase.dll");
+	aLoadLibraryExW = GetProcAddress(hinstKernelBase, "LoadLibraryExW");
+	if (MH_CreateHook(&aLoadLibraryExW, &LoadLibraryExWHook, (LPVOID*)&fpLoadLibraryExW) != MH_OK)
+		return;
+	if (MH_EnableHook(&aLoadLibraryExW) != MH_OK)
+		return;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
