@@ -40,11 +40,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
-	HINSTANCE hMod = LoadLibrary("rich_edit_hook.dll");
-	FARPROC proc = GetProcAddress(hMod, "hook");
-	// WH_CBT is the least intrusive hook type
-	HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
-	FreeLibrary(hMod);
+	// pipes for the inject process
+	SECURITY_ATTRIBUTES saAttr;
+	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	saAttr.bInheritHandle = TRUE;
+	saAttr.lpSecurityDescriptor = NULL;
+	HANDLE hStdInRead, hStdInWrite;
+	CreatePipe(&hStdInRead, &hStdInWrite, &saAttr, 0);
+	SetHandleInformation(hStdInWrite, HANDLE_FLAG_INHERIT, 0);
+	// create the inject process
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	STARTUPINFO si = {.cb = sizeof(STARTUPINFO), .hStdInput = hStdInRead, .dwFlags = STARTF_USESTDHANDLES};
+	si.dwFlags = STARTF_USESTDHANDLES;
+	CreateProcess(NULL, "rich_edit_inject.exe", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
@@ -64,6 +73,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	UnhookWindowsHookEx(hHook);
+	// signal to unhook
+	CloseHandle(hStdInWrite);
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 	Shell_NotifyIcon(NIM_DELETE, &iconData);
 }

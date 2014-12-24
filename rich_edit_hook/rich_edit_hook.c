@@ -37,8 +37,8 @@ LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
-	case WM_MOUSEWHEEL:
-		return Scroll(hWnd, message, wParam, lParam);
+		case WM_MOUSEWHEEL:
+			return Scroll(hWnd, message, wParam, lParam);
 	}
 	return fpRichEditWndProc(hWnd, message, wParam, lParam);
 }

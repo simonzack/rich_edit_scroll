@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rich_edit_scroll", "rich_ed
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rich_edit_hook", "rich_edit_hook\rich_edit_hook.vcxproj", "{9927616E-F5D6-4CFD-9E84-508DE71E23A2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rich_edit_inject", "rich_edit_inject\rich_edit_inject.vcxproj", "{345CD27B-2468-4459-9F5D-8B2DF685C217}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,13 @@ Global
 		{9927616E-F5D6-4CFD-9E84-508DE71E23A2}.Release|Win32.Build.0 = Release|Win32
 		{9927616E-F5D6-4CFD-9E84-508DE71E23A2}.Release|x64.ActiveCfg = Release|x64
 		{9927616E-F5D6-4CFD-9E84-508DE71E23A2}.Release|x64.Build.0 = Release|x64
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Debug|Win32.ActiveCfg = Debug|Win32
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Debug|Win32.Build.0 = Debug|Win32
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Debug|x64.ActiveCfg = Debug|x64
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Debug|x64.Build.0 = Debug|x64
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Release|Win32.ActiveCfg = Release|Win32
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Release|Win32.Build.0 = Release|Win32
+		{345CD27B-2468-4459-9F5D-8B2DF685C217}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
