@@ -67,7 +67,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH: {
 			// don't hook if process name is incorrect
-			const TCHAR* matches[] = { "rich_edit_scroll.exe", "sandbox.exe" };
+			const TCHAR* matches[] = { "sandbox.exe" };
 			TCHAR fileName[MAX_PATH];
 			GetModuleFileName(NULL, fileName, sizeof(fileName));
 			for (int i = 0; i < sizeof(matches)/sizeof(*matches); i++){
