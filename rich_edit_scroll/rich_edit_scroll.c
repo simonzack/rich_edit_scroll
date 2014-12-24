@@ -44,6 +44,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	FARPROC proc = GetProcAddress(hMod, "hook");
 	// WH_CBT is the least intrusive hook type
 	HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
+	FreeLibrary(hMod);
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
