@@ -36,9 +36,9 @@ LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 void HookRichEditWndProc(HINSTANCE hinstRichEdit){
 	aRichEditWndProc = GetProcAddress(hinstRichEdit, "RichEditWndProc");
-	if (MH_CreateHook(&aRichEditWndProc, &RichEditWndProcHook, (LPVOID*)&fpRichEditWndProc) != MH_OK)
+	if (MH_CreateHook(aRichEditWndProc, &RichEditWndProcHook, (LPVOID*)&fpRichEditWndProc) != MH_OK)
 		return;
-	if (MH_EnableHook(&aRichEditWndProc) != MH_OK)
+	if (MH_EnableHook(aRichEditWndProc) != MH_OK)
 		return;
 }
 
@@ -56,9 +56,9 @@ void HookLoadLibrary(){
 	// all the LoadLibrary variants eventually call LoadLibraryExW
 	HINSTANCE hinstKernelBase = GetModuleHandle("kernelbase.dll");
 	aLoadLibraryExW = GetProcAddress(hinstKernelBase, "LoadLibraryExW");
-	if (MH_CreateHook(&aLoadLibraryExW, &LoadLibraryExWHook, (LPVOID*)&fpLoadLibraryExW) != MH_OK)
+	if (MH_CreateHook(aLoadLibraryExW, &LoadLibraryExWHook, (LPVOID*)&fpLoadLibraryExW) != MH_OK)
 		return;
-	if (MH_EnableHook(&aLoadLibraryExW) != MH_OK)
+	if (MH_EnableHook(aLoadLibraryExW) != MH_OK)
 		return;
 }
 
