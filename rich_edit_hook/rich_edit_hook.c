@@ -11,6 +11,18 @@ WNDPROC fpRichEditWndProc = NULL;
 FARPROC aLoadLibraryExW;
 LOADLIBRARYEXW fpLoadLibraryExW = NULL;
 
+BOOL MatchFileNameStr(const char* fileName, const char* match) {
+	if (strlen(fileName) > strlen(match) && fileName[strlen(fileName) - strlen(match) - 1] != '\\')
+		return FALSE;
+	return strlen(fileName) >= strlen(match) && _stricmp(fileName + strlen(fileName) - strlen(match), match) == 0;
+}
+
+BOOL MatchFileNameWStr(const wchar_t* fileName, const wchar_t* match) {
+	if (wcslen(fileName) > wcslen(match) && fileName[wcslen(fileName) - wcslen(match) - 1] != L'\\')
+		return FALSE;
+	return wcslen(fileName) >= wcslen(match) && _wcsicmp(fileName + wcslen(fileName) - wcslen(match), match) == 0;
+}
+
 LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	short delta = GET_WHEEL_DELTA_WPARAM(wParam);
 	if (delta > 0) {
@@ -46,7 +58,7 @@ HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
 	HMODULE res = fpLoadLibraryExW(lpFileName, hFile, dwFlags);
 	if (res == NULL)
 		return res;
-	if (wcscmp(lpFileName, L"msftedit") == 0 || wcscmp(lpFileName, L"msftedit.dll") == 0)
+	if (MatchFileNameWStr(lpFileName, L"msftedit") == 0 || MatchFileNameWStr(lpFileName, L"msftedit.dll") == 0)
 		HookRichEditWndProc(res);
 	MH_DisableHook(&LoadLibraryExW);
 	return res;
@@ -67,15 +79,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH: {
 			// don't hook if process name is incorrect
-			const TCHAR* matches[] = { "sandbox.exe" };
-			TCHAR fileName[MAX_PATH];
+			const char* matches[] = { "wordpad.exe" };
+			char fileName[MAX_PATH];
 			GetModuleFileName(NULL, fileName, sizeof(fileName));
 			for (int i = 0; i < sizeof(matches)/sizeof(*matches); i++){
-				const TCHAR* match = matches[i];
-				matched |= (
-					strlen(fileName) > strlen(match) && fileName[strlen(fileName) - strlen(match) - 1] == '\\' &&
-					strcmp(fileName + strlen(fileName) - strlen(match), match) == 0
-				);
+				const char* match = matches[i];
+				matched |= MatchFileNameStr(fileName, match);
 			}
 			if (!matched)
 				break;
@@ -99,6 +108,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	return TRUE;
 }
 
-__declspec(dllexport) LRESULT CALLBACK hook(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK hook(int nCode, WPARAM wParam, LPARAM lParam) {
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
