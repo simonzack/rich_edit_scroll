@@ -76,7 +76,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 			const char* matches[] = { "wordpad.exe" };
 			char fileName[MAX_PATH];
 			GetModuleFileName(NULL, fileName, sizeof(fileName));
-			for (int i = 0; i < sizeof(matches)/sizeof(*matches); i++){
+			for (int i = 0; i < sizeof(matches)/sizeof(*matches) && !matched; i++){
 				const char* match = matches[i];
 				matched |= MatchFileNameStr(fileName, match);
 			}
