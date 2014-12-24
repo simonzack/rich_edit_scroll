@@ -53,7 +53,7 @@ HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
 }
 
 void HookLoadLibrary(){
-	// all the LoadLibrary variants eventually call LoadLibraryExW
+	// all the LoadLibrary variants eventually call kernelbase!LoadLibraryExW
 	HINSTANCE hinstKernelBase = GetModuleHandle("kernelbase.dll");
 	aLoadLibraryExW = GetProcAddress(hinstKernelBase, "LoadLibraryExW");
 	if (MH_CreateHook(aLoadLibraryExW, &LoadLibraryExWHook, (LPVOID*)&fpLoadLibraryExW) != MH_OK)
