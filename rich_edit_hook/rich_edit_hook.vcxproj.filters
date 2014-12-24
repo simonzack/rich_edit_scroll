@@ -21,5 +21,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="rich_edit_hook.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
