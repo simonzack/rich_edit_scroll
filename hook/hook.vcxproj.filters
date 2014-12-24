@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="rich_edit_hook.c">
+    <ClCompile Include="hook.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="rich_edit_hook.def">
+    <None Include="hook.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

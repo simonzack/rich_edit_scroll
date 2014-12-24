@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rich_edit_scroll", "rich_edit_scroll\rich_edit_scroll.vcxproj", "{00680FA9-89BC-42C1-94B1-A62AD64C1605}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rich_edit_hook", "rich_edit_hook\rich_edit_hook.vcxproj", "{9927616E-F5D6-4CFD-9E84-508DE71E23A2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hook", "hook\hook.vcxproj", "{9927616E-F5D6-4CFD-9E84-508DE71E23A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

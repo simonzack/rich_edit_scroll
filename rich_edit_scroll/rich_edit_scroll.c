@@ -40,7 +40,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
-	HINSTANCE hMod = LoadLibrary("rich_edit_hook.dll");
+	HINSTANCE hMod = LoadLibrary("hook.dll");
 	FARPROC proc = GetProcAddress(hMod, "hook");
 	// WH_CBT is the least intrusive hook type
 	HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
