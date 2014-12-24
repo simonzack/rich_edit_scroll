@@ -6,7 +6,6 @@
 
 typedef HMODULE(WINAPI *LOADLIBRARYEXW)(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
 
-BOOL matched = FALSE;
 FARPROC aRichEditWndProc;
 WNDPROC fpRichEditWndProc = NULL;
 FARPROC aLoadLibraryExW;
@@ -64,6 +63,7 @@ void HookLoadLibrary(){
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+	static BOOL matched = FALSE;
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH: {
 			// don't hook if process name is incorrect
