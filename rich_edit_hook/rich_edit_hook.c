@@ -9,18 +9,12 @@
 
 typedef HMODULE(WINAPI *LOADLIBRARYEXW)(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
 
+int scroll_speed;
+
 FARPROC aRichEditWndProc;
 WNDPROC fpRichEditWndProc = NULL;
 FARPROC aLoadLibraryExW;
 LOADLIBRARYEXW fpLoadLibraryExW = NULL;
-
-#define SCROLL_SPEED 3
-
-BOOL MatchFileNameStr(const char* fileName, const char* match) {
-	if (strlen(fileName) > strlen(match) && fileName[strlen(fileName) - strlen(match) - 1] != '\\')
-		return FALSE;
-	return strlen(fileName) >= strlen(match) && _stricmp(fileName + strlen(fileName) - strlen(match), match) == 0;
-}
 
 BOOL MatchFileNameWStr(const wchar_t* fileName, const wchar_t* match) {
 	if (wcslen(fileName) > wcslen(match) && fileName[wcslen(fileName) - wcslen(match) - 1] != L'\\')
@@ -31,7 +25,7 @@ BOOL MatchFileNameWStr(const wchar_t* fileName, const wchar_t* match) {
 LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	LRESULT res;
 	short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-	for (int i = 0; i < SCROLL_SPEED; i++) {
+	for (int i = 0; i < scroll_speed; i++) {
 		if (delta > 0) {
 			res = fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEUP, 0);
 		} else {
@@ -85,24 +79,24 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 			char iniPath[MAX_PATH];
 			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, iniPath);
 			PathAppend(iniPath, "rich_edit_scroll.ini");
-			if (!PathFileExists(iniPath))
-				WritePrivateProfileString("hook", "processes", "", iniPath);
-			char matches[0x10000];
-			int matchesLen = GetPrivateProfileString("hook", "processes", NULL, matches, sizeof(matches), iniPath);
-			char* match = matches;
+			scroll_speed = GetPrivateProfileInt("default", "scroll_speed", 3, iniPath);
 			// don't hook if process name is incorrect
-			char fileName[MAX_PATH];
-			GetModuleFileName(NULL, fileName, sizeof(fileName));
-			while ((int)match != 1 && !matched) {
-				char* end = strchr(match, ',');
-				if (end)
-					*end = 0;
-				if (*match)
-					matched |= MatchFileNameStr(fileName, match);
-				match = end + 1;
+			char filePath[MAX_PATH];
+			GetModuleFileName(NULL, filePath, sizeof(filePath));
+			char* fileName = PathFindFileName(filePath);
+			char buffer[0x1000];
+			GetPrivateProfileSectionNames(buffer, sizeof(buffer), iniPath);
+			char* search = buffer;
+			while (*search) {
+				if (_stricmp(search, fileName) == 0) {
+					matched = TRUE;
+					break;
+				}
+				search = strchr(search, '\0') + 1;
 			}
 			if (!matched)
 				break;
+			scroll_speed = GetPrivateProfileInt(fileName, "scroll_speed", scroll_speed, iniPath);
 			// hook RichEditWndProc
 			if (MH_Initialize() != MH_OK)
 				break;
