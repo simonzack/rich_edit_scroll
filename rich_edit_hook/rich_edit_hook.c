@@ -1,8 +1,11 @@
 
 #include <Windows.h>
+#include <Shlobj.h>
+#include <Shlwapi.h>
 #include "MinHook.h"
 
 #pragma comment(lib, "libMinHook.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 typedef HMODULE(WINAPI *LOADLIBRARYEXW)(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags);
 
@@ -34,8 +37,8 @@ LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
-		case WM_MOUSEWHEEL:
-			return Scroll(hWnd, message, wParam, lParam);
+	case WM_MOUSEWHEEL:
+		return Scroll(hWnd, message, wParam, lParam);
 	}
 	return fpRichEditWndProc(hWnd, message, wParam, lParam);
 }
@@ -72,13 +75,25 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	static BOOL matched = FALSE;
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH: {
+			// ini
+			char iniPath[MAX_PATH];
+			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, iniPath);
+			PathAppend(iniPath, "rich_edit_scroll.ini");
+			if (!PathFileExists(iniPath))
+				WritePrivateProfileString("hook", "processes", "", iniPath);
+			char matches[0x10000];
+			int matchesLen = GetPrivateProfileString("hook", "processes", NULL, matches, sizeof(matches), iniPath);
+			char* match = matches;
 			// don't hook if process name is incorrect
-			const char* matches[] = { "wordpad.exe" };
 			char fileName[MAX_PATH];
 			GetModuleFileName(NULL, fileName, sizeof(fileName));
-			for (int i = 0; i < sizeof(matches)/sizeof(*matches) && !matched; i++){
-				const char* match = matches[i];
-				matched |= MatchFileNameStr(fileName, match);
+			while ((int)match != 1 && !matched) {
+				char* end = strchr(match, ',');
+				if (end)
+					*end = 0;
+				if (*match)
+					matched |= MatchFileNameStr(fileName, match);
+				match = end + 1;
 			}
 			if (!matched)
 				break;
