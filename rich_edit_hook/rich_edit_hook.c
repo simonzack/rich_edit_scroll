@@ -14,6 +14,8 @@ WNDPROC fpRichEditWndProc = NULL;
 FARPROC aLoadLibraryExW;
 LOADLIBRARYEXW fpLoadLibraryExW = NULL;
 
+#define SCROLL_SPEED 3
+
 BOOL MatchFileNameStr(const char* fileName, const char* match) {
 	if (strlen(fileName) > strlen(match) && fileName[strlen(fileName) - strlen(match) - 1] != '\\')
 		return FALSE;
@@ -27,12 +29,16 @@ BOOL MatchFileNameWStr(const wchar_t* fileName, const wchar_t* match) {
 }
 
 LRESULT CALLBACK Scroll(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	LRESULT res;
 	short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-	if (delta > 0) {
-		return fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEUP, 0);
-	} else {
-		return fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+	for (int i = 0; i < SCROLL_SPEED; i++) {
+		if (delta > 0) {
+			res = fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEUP, 0);
+		} else {
+			res = fpRichEditWndProc(hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+		}
 	}
+	return res;
 }
 
 LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
