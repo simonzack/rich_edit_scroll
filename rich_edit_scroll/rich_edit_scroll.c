@@ -79,8 +79,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	HANDLE hStdInWrite32 = NULL, hStdInWrite64 = NULL;
 	PROCESS_INFORMATION pi32, pi64;
 	if (Is64BitWindows())
-		created64 = CreateInjectProcess(&hStdInWrite64, &pi64, _T("rich_edit_inject_64.exe"));
-	created32 = CreateInjectProcess(&hStdInWrite32, &pi32, _T("rich_edit_inject_32.exe"));
+		created64 = CreateInjectProcess(&hStdInWrite64, &pi64, _tcsdup(_T("rich_edit_inject_64.exe")));
+	created32 = CreateInjectProcess(&hStdInWrite32, &pi32, _tcsdup(_T("rich_edit_inject_32.exe")));
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
