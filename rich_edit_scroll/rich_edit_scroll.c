@@ -1,6 +1,7 @@
 
-#include "resource.h"
 #include <Windows.h>
+#include <Tchar.h>
+#include "resource.h"
 
 typedef enum {
 	ID_ICON,
@@ -13,7 +14,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 			switch (lParam) {
 				case WM_RBUTTONDOWN: {
 					HMENU popMenu = CreatePopupMenu();
-					AppendMenu(popMenu, MF_STRING, ID_MENU_EXIT, "Exit");
+					AppendMenu(popMenu, MF_STRING, ID_MENU_EXIT, _T("Exit"));
 					SetForegroundWindow(hWnd);
 					POINT pCursor;
 					GetCursorPos(&pCursor);
@@ -53,20 +54,20 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 	STARTUPINFO si = {.cb = sizeof(STARTUPINFO), .hStdInput = hStdInRead, .dwFlags = STARTF_USESTDHANDLES};
 	si.dwFlags = STARTF_USESTDHANDLES;
-	CreateProcess(NULL, "rich_edit_inject.exe", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+	CreateProcess(NULL, _T("rich_edit_inject.exe"), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
 		.hCursor = NULL, .hbrBackground = (HBRUSH)COLOR_WINDOW, .lpszMenuName = NULL,
-		.lpszClassName = "RichEditScrollCls"
+		.lpszClassName = _T("RichEditScrollCls")
 	};
 	RegisterClass(&wndCls);
-	HWND hWnd = CreateWindow("RichEditScrollCls", NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+	HWND hWnd = CreateWindow(_T("RichEditScrollCls"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 	NOTIFYICONDATA iconData = {
 		.cbSize = sizeof(iconData), .hWnd = hWnd, .uID = ID_ICON, .uFlags = NIF_TIP | NIF_ICON | NIF_MESSAGE,
 		.uCallbackMessage = WM_USER, .hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_HOOK))
 	};
-	strcpy_s(iconData.szTip, 64, "Rich Edit Smooth Scroll Disabler");
+	_tcscpy_s(iconData.szTip, sizeof(iconData.szTip) / sizeof(*iconData.szTip), _T("Rich Edit Smooth Scroll Disabler"));
 	Shell_NotifyIcon(NIM_ADD, &iconData);
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)){

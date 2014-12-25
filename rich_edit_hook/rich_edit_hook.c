@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <Shlobj.h>
 #include <Shlwapi.h>
+#include <Tchar.h>
 #include "MinHook.h"
 
 #pragma comment(lib, "libMinHook.lib")
@@ -63,7 +64,7 @@ HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
 
 void HookLoadLibrary(){
 	// all the LoadLibrary variants eventually call kernelbase!LoadLibraryExW
-	HINSTANCE hinstKernelBase = GetModuleHandle("kernelbase.dll");
+	HINSTANCE hinstKernelBase = GetModuleHandle(_T("kernelbase.dll"));
 	aLoadLibraryExW = GetProcAddress(hinstKernelBase, "LoadLibraryExW");
 	if (MH_CreateHook(aLoadLibraryExW, &LoadLibraryExWHook, (LPVOID*)&fpLoadLibraryExW) != MH_OK)
 		return;
@@ -76,31 +77,31 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH: {
 			// ini
-			char iniPath[MAX_PATH];
+			TCHAR iniPath[MAX_PATH];
 			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, iniPath);
-			PathAppend(iniPath, "rich_edit_scroll.ini");
-			scroll_speed = GetPrivateProfileInt("default", "scroll_speed", 3, iniPath);
+			PathAppend(iniPath, _T("rich_edit_scroll.ini"));
+			scroll_speed = GetPrivateProfileInt(_T("default"), _T("scroll_speed"), 3, iniPath);
 			// don't hook if process name is incorrect
-			char filePath[MAX_PATH];
+			TCHAR filePath[MAX_PATH];
 			GetModuleFileName(NULL, filePath, sizeof(filePath));
-			char* fileName = PathFindFileName(filePath);
-			char buffer[0x1000];
+			LPTSTR fileName = PathFindFileName(filePath);
+			TCHAR buffer[0x1000];
 			GetPrivateProfileSectionNames(buffer, sizeof(buffer), iniPath);
-			char* search = buffer;
+			TCHAR* search = buffer;
 			while (*search) {
-				if (_stricmp(search, fileName) == 0) {
+				if (_tcsicmp(search, fileName) == 0) {
 					matched = TRUE;
 					break;
 				}
-				search = strchr(search, '\0') + 1;
+				search = _tcschr(search, _T('\0')) + 1;
 			}
 			if (!matched)
 				break;
-			scroll_speed = GetPrivateProfileInt(fileName, "scroll_speed", scroll_speed, iniPath);
+			scroll_speed = GetPrivateProfileInt(fileName, _T("scroll_speed"), scroll_speed, iniPath);
 			// hook RichEditWndProc
 			if (MH_Initialize() != MH_OK)
 				break;
-			HINSTANCE hinstRichEdit = GetModuleHandle("msftedit.dll");
+			HINSTANCE hinstRichEdit = GetModuleHandle(_T("msftedit.dll"));
 			if (hinstRichEdit == NULL)
 				HookLoadLibrary();
 			else

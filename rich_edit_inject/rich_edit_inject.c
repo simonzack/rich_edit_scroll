@@ -1,8 +1,9 @@
 
 #include <Windows.h>
+#include <Tchar.h>
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
-	HINSTANCE hMod = LoadLibrary("rich_edit_hook.dll");
+	HINSTANCE hMod = LoadLibrary(_T("rich_edit_hook.dll"));
 	FARPROC proc = GetProcAddress(hMod, "hook");
 	// WH_CBT is the least intrusive hook type
 	HHOOK hHook = SetWindowsHookEx(WH_CBT, (HOOKPROC)proc, hMod, 0);
