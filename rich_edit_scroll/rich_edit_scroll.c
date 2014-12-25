@@ -8,6 +8,17 @@ typedef enum {
 	ID_MENU_EXIT
 } ResourceID;
 
+BOOL Is64BitWindows() {
+#if defined(_WIN64)
+	return TRUE;
+#elif defined(_WIN32)
+	BOOL f64 = FALSE;
+	return IsWow64Process(GetCurrentProcess(), &f64) && f64;
+#else
+	return FALSE;
+#endif
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 	switch (message){
 		case WM_USER:
@@ -67,7 +78,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	BOOL created32 = FALSE, created64 = FALSE;
 	HANDLE hStdInWrite32 = NULL, hStdInWrite64 = NULL;
 	PROCESS_INFORMATION pi32, pi64;
-	if (sizeof(void*) == 8)
+	if (Is64BitWindows())
 		created64 = CreateInjectProcess(&hStdInWrite64, &pi64, _T("rich_edit_inject_64.exe"));
 	created32 = CreateInjectProcess(&hStdInWrite32, &pi32, _T("rich_edit_inject_32.exe"));
 	// create notify icon
