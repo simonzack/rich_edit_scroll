@@ -44,7 +44,7 @@ LRESULT CALLBACK RichEditWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPA
 	return fpRichEditWndProc(hWnd, message, wParam, lParam);
 }
 
-void HookRichEditWndProc(HINSTANCE hinstRichEdit){
+void HookRichEditWndProc(HMODULE hinstRichEdit){
 	aRichEditWndProc = GetProcAddress(hinstRichEdit, "RichEditWndProc");
 	if (MH_CreateHook(aRichEditWndProc, &RichEditWndProcHook, (LPVOID*)&fpRichEditWndProc) != MH_OK)
 		return;
@@ -52,7 +52,7 @@ void HookRichEditWndProc(HINSTANCE hinstRichEdit){
 		return;
 }
 
-HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
+HMODULE WINAPI LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
 	HMODULE res = fpLoadLibraryExW(lpFileName, hFile, dwFlags);
 	if (res == NULL)
 		return res;
