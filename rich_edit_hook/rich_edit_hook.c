@@ -56,9 +56,10 @@ HMODULE LoadLibraryExWHook(LPCWSTR lpFileName, HANDLE hFile, DWORD dwFlags) {
 	HMODULE res = fpLoadLibraryExW(lpFileName, hFile, dwFlags);
 	if (res == NULL)
 		return res;
-	if (MatchFileNameWStr(lpFileName, L"msftedit") == 0 || MatchFileNameWStr(lpFileName, L"msftedit.dll") == 0)
+	if (MatchFileNameWStr(lpFileName, L"msftedit") || MatchFileNameWStr(lpFileName, L"msftedit.dll")) {
 		HookRichEditWndProc(res);
-	MH_DisableHook(&LoadLibraryExW);
+		MH_DisableHook(aLoadLibraryExW);
+	}
 	return res;
 }
 
