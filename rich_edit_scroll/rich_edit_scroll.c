@@ -40,21 +40,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
+BOOL CreateInjectProcess(PHANDLE phStdInWrite, PPROCESS_INFORMATION ppi, PTSTR name) {
 	// pipes for the inject process
 	SECURITY_ATTRIBUTES saAttr;
 	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	saAttr.bInheritHandle = TRUE;
 	saAttr.lpSecurityDescriptor = NULL;
-	HANDLE hStdInRead, hStdInWrite;
-	CreatePipe(&hStdInRead, &hStdInWrite, &saAttr, 0);
-	SetHandleInformation(hStdInWrite, HANDLE_FLAG_INHERIT, 0);
+	HANDLE hStdInRead;
+	CreatePipe(&hStdInRead, phStdInWrite, &saAttr, 0);
+	SetHandleInformation(*phStdInWrite, HANDLE_FLAG_INHERIT, 0);
 	// create the inject process
-	PROCESS_INFORMATION pi;
-	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(ppi, sizeof(PROCESS_INFORMATION));
 	STARTUPINFO si = {.cb = sizeof(STARTUPINFO), .hStdInput = hStdInRead, .dwFlags = STARTF_USESTDHANDLES};
 	si.dwFlags = STARTF_USESTDHANDLES;
-	CreateProcess(NULL, _T("rich_edit_inject.exe"), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+	return CreateProcess(NULL, name, NULL, NULL, TRUE, 0, NULL, NULL, &si, ppi);
+}
+
+void CloseInjectProcess(HANDLE hStdInWrite, PPROCESS_INFORMATION ppi) {
+	CloseHandle(hStdInWrite);
+	WaitForSingleObject(ppi->hProcess, INFINITE);
+	CloseHandle(ppi->hProcess);
+	CloseHandle(ppi->hThread);
+}
+
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow){
+	BOOL created32 = FALSE, created64 = FALSE;
+	HANDLE hStdInWrite32 = NULL, hStdInWrite64 = NULL;
+	PROCESS_INFORMATION pi32, pi64;
+	if (sizeof(void*) == 8)
+		created64 = CreateInjectProcess(&hStdInWrite64, &pi64, _T("rich_edit_inject_64.exe"));
+	created32 = CreateInjectProcess(&hStdInWrite32, &pi32, _T("rich_edit_inject_32.exe"));
 	// create notify icon
 	WNDCLASS wndCls = {
 		.style = 0, .lpfnWndProc = WndProc, .cbClsExtra = 0, .cbWndExtra = 0, .hInstance = hInstance, .hIcon = NULL,
@@ -75,9 +90,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		DispatchMessage(&msg);
 	}
 	// signal to unhook
-	CloseHandle(hStdInWrite);
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+	if (created32)
+		CloseInjectProcess(hStdInWrite32, &pi32);
+	if (created64)
+		CloseInjectProcess(hStdInWrite64, &pi64);
 	Shell_NotifyIcon(NIM_DELETE, &iconData);
 }
