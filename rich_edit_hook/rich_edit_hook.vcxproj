@@ -89,7 +89,6 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>rich_edit_hook.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -100,7 +99,6 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>rich_edit_hook.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
